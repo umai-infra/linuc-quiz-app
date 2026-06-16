@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LinuC  Lv1-101 コマ問</title>
+<style>
+  body {
+    text-align: center;
+    font-family: sans-serif;
+    padding: 20px;
+    max-width: 500px;
+    margin: auto;
+  }
+  .card {
+    padding: 20px;
+    border-radius: 10px;
+    background: #dcedc8; 
+    margin-bottom: 20px;
+  }
+#result {
+  margin-top: 30px;
+   white-space: pre-line;
+}
+  button {
+    width: 65%;
+    padding: 15px;
+    font-size: 18px;
+    border: none;
+    border-radius: 8px;
+    background: #3395ff;
+    color: white;
+    margin-top: 10px;
+  }
+  input {
+    width: 80%;
+    padding: 12px;
+    font-size: 18px;
+    border-radius: 8px;
+    border: 1px solid #ccc; 
+  }
+h2 {
+  text-align: center;
+}
+#questionNumber {
+  font-size: 14px;      
+  color: #555;          
+  margin-bottom: 5px;   
+  text-align: left;    
+}
+#question {
+  text-align: left;
+  white-space: pre-line; 
+}
+</style>
+</head>
+<body>
+
+<h2>LinuC  Lv1-101 コマ問</h2>
+
+<div style="margin-bottom: 15px;">
+  <select id="categoryFilter" onchange="startQuiz()">
+    <option value="all">全カテゴリ</option>
+  </select>
+</div>
+
+<div id="progress" style="margin-bottom: 10px; font-size: 18px; color: #333;"></div>
+
+<div class="card">
+  <div id="questionNumber"></div>
+  <div id="question">問題を読み込み中…</div>
+</div>
+
+<div class="card">
+  <input id="userInput" type="text" placeholder="入力">
+</div>
+
+<button onclick="checkAnswer()">答え合わせ</button>
+<button onclick="nextQuestion()">次の問題</button>
+<button onclick="prevQuestion()">前の問題に戻る</button>
+
+<div class="card" id="result" style="display:none;"></div>
+
+<script>
+const qaList = [
+  { no: 1,  q: "あるユーザが、自分用に環境変数を設定しておきたい時、編集すべきファイルは？", a: "~/.bash_profile" },
+  { no: 2,  q: "全ユーザのデフォルトに設定されている環境変数を変更したい場合、編集すべきファイルは？", a: "/etc/profile" },
+  { no: 3,  q: "登録されているエイリアスを表示しなさい。", a: "alias" },
+  { no: 4,  q: "プログラムの置いてあるディレクトリ名を設定する環境変数を、echoで出力しなさい。", a: "echo $PATH" },
+  { no: 5,  q: "対話型シェルを起動した際に読み込まれるファイルは？(ユーザ個別ファイル)", a: "~/.bashrc" },
+  { no: 6,  q: "対話型シェルを起動した際に読み込まれるファイルは？(全体設定用：RedHat系)", a: "/etc/bashrc" },
+  { no: 7,  q: "対話型シェルを起動した際に読み込まれるファイルは？(全体設定用：Debian系)", a: "/etc/bash.bashrc" },
+  { no: 8,  q: "ログアウト時に実行されるbashのスクリプトファイルを答えなさい。", a: "~/.bash_logout" },
+  { no: 9,  q: "登録されているエイリアスを全て削除しなさい。", a: "unalias -a" },
+  { no: 10, q: "Debian系ディストリビューションで使われる、シェルの起動時に必ず読み込まれる設定ファイルは？", a: "/etc/bash.bashrc" },
+  { no: 11, q: "エイリアス機能を利用し「rmi」と入力して実行すると「rm -i」が自動的に実行されるようにしなさい。(シングルクォーテーション使用）", a: "alias rmi='rm -i'" },
+  { no: 12, q: "あるユーザが、自分用にコマンドのエイリアスを設定したい時、編集すべきファイルは？", a: "~/.bashrc" },
+  { no: 13, q: "現在の環境変数PATHに「/home/user1/sh」ディレクトリを追加したい。下線部にあてはまる語句は？(ディレクトリは値の最後に追加)\n$ export ____________________", a: "PATH=$PATH:/home/user1/sh" },
+  { no: 14, q: "登録したエイリアス「rm」（rm='rm -i'）を一時的に無効化して、hogehoge.txtを削除しなさい。", a: "\rm hogehoge.txt" },
+  { no: 15, q: "Linuxで使用される標準シェルの名前を答えなさい。", a: "bash" },
+  { no: 16, q: "登録されているエイリアスのうち、「rmi」のみを削除しなさい。", a: "unalias rmi" },
+  { no: 17, q: "あるコマンドのエイリアスを全ユーザで使用するように設定しておきたい時、編集すべきファイルは？(RedHat系)", a: "/etc/bashrc" },
+  { no: 18, q: "あるコマンドのエイリアスを全ユーザで使用するように設定しておきたい時、編集すべきファイルは？(Debian系)", a: "/etc/bash.bashrc" },
+  { no: 19, q: "command1を実行し、command1が失敗した場合のみcommand2を続けて実行させたい。論理演算子は？", a: "||" },
+  { no: 20, q: "command1を実行し、command1が成功した場合のみcommand2を続けて実行させたい。論理演算子は？", a: "&&" },
+  { no: 21, q: "以下はあるシェルスクリプトからの抜粋である。空欄に適語を入れ「/home/file1が存在し、かつ実行可能であれば真」となる条件を作成せよ。\nif test ( ) /home/file1", a: "-x" },
+  { no: 22, q: "以下はあるシェルスクリプトからの抜粋である。空欄に適語を入れ「文字列1(STR1)と文字列2(STR2)が等しくなければ真」となる条件を作成せよ。\nif test $STR1 ( ) $STR2", a: "!=" },
+  { no: 23, q: "以下はあるシェルスクリプトからの抜粋である。空欄に適語を入れ「/home/file1が存在し、かつ読みこみ可能であれば真」となる条件を作成せよ。\nif test ( ) /home/file1", a: "-r" },
+  { no: 24, q: "以下はあるシェルスクリプトからの抜粋である。空欄に適語を入れ「数値1(NUM1)と数値2(NUM2)が等しければ真」となる条件を作成せよ。\nif test $NUM1 ( ) $NUM2", a: "-eq" },
+  { no: 25, q: "シェルの特殊変数のうち、直前に実行されたコマンドの終了ステータスが設定される変数は？", a: "$?" },
+  { no: 26, q: "以下はあるシェルスクリプトからの抜粋である。空欄に適語を入れ「指定したパスが存在すれば真(ファイルでもディレクトリでも可)」となる条件を作成せよ。\nif test ( ) /file/or/directory/path", a: "-e" },
+  { no: 27, q: "以下はあるシェルスクリプトからの抜粋である。空欄に適語を入れ「数値1(NUM1)が数値2(NUM2)より大きければ真」となる条件を作成せよ。\nif test $NUM1 ( ) $NUM2", a: "-gt" },
+  { no: 28, q: "bashで作成されたスクリプトをデバッグするために、コマンドや変数を展開して表示したい。スクリプトの1行目に記載する内容を答えなさい。", a: "#!/bin/bash -x" },
+  { no: 29, q: "シェルの特殊変数のうち、コマンド実行時に指定された引数の数が設定される変数は？", a: "$#" },
+  { no: 30, q: "以下はあるシェルスクリプトからの抜粋である。空欄に適語を入れ「/home/dir1が存在し、かつディレクトリであれば真」となる条件を作成せよ。\nif test ( ) /home/dir1", a: "-d" },
+  { no: 31, q: "シェルの特殊変数のうち、10番目の引数が設定される変数は？", a: "${10}" },
+  { no: 32, q: "以下はあるシェルスクリプトからの抜粋である。空欄に適語を入れ「数値1(NUM1)が数値2(NUM2)より小さければ真」となる条件を作成せよ。\nif test $NUM1 ( ) $NUM2", a: "-lt" },
+  { no: 33, q: "以下はあるシェルスクリプトからの抜粋である。空欄に適語を入れ「/home/file1が存在し、かつファイルであれば真」となる条件を作成せよ。\nif test ( ) /home/file1", a: "-f" },
+  { no: 34, q: "bashコマンドのオプションのうち、シェルが実行した行を単純なコマンドや変数を展開して標準エラー出力に出力するオプションは？", a: "-x" },
+  { no: 35, q: "以下はあるシェルスクリプトからの抜粋である。空欄に適語を入れ「数値1(NUM1)と数値2(NUM2)が等しくなければ真」となる条件を作成せよ。\nif test $NUM1 ( ) $NUM2", a: "-ne" },
+  { no: 36, q: "シェルスクリプト「file」の所有ユーザをtestからstaffに、所有グループをtestからgpに変更したい。適切なコマンドは？", a: ["chown staff:gp file", "chown staff.gp file"] },
+  { no: 37, q: "bashで作成されたスクリプトの、1行目に記載する内容を答えなさい。", a: "#!/bin/bash" },
+  { no: 38, q: "実行権の与えられていない「sample.sh」を実行せよ。(1文字で)", a: "." },
+  { no: 39, q: "以下はあるシェルスクリプトからの抜粋である。空欄に適語を入れ「数値1(NUM1)が数値2(NUM2)以下であれば真」となる条件を作成せよ。\nif test $NUM1 ( ) $NUM2", a: "-le" },
+  { no: 40, q: "TODAY変数に現在の日付時刻を格納したい。コマンド置換機能を使ってdateコマンドの結果をTODAY変数に格納せよ。", a: ["TODAY=`date`", "TODAY=$(date)"] },
+  { no: 41, q: "指定した数の分、引数の位置を番号の小さい方にずらすコマンドは？", a: "shift" },
+  { no: 42, q: "以下はあるシェルスクリプトからの抜粋である。空欄に適語を入れ「数値1(NUM1)が数値2(NUM2)以上であれば真」となる条件を作成せよ。\nif test $NUM1 ( ) $NUM2", a: "-ge" },
+  { no: 43, q: "以下はあるシェルスクリプトからの抜粋である。空欄に適語を入れ「file1の更新日が、file2より新しければ真」となる条件を作成せよ。\nif test /home/file1 ( ) /home/file2", a: "-nt" },
+  { no: 44, q: "以下はあるシェルスクリプトからの抜粋である。空欄に適語を入れ「file2の更新日が、file1より新しければ真」となる条件を作成せよ。\nif test /home/file1 ( ) /home/file2", a: "-ot" },
+  { no: 45, q: "シェルの特殊変数のうち、現在のシェルのプロセス番号が設定される変数は？", a: "$$" },
+  { no: 46, q: "シェルに割り込みなどのシグナルが送られた時の処理を設定・実行するコマンドは？", a: "trap" },
+  { no: 47, q: "bashの組み込みコマンドを使用し、独自関数「lslR」を作成しなさい。", a: "function lslR() { ls -lR $1; }" },
+  { no: 48, q: "bashコマンドのオプションのうち、シェルが読み込んだこれから実行する行を標準エラー出力に出力するオプションは？", a: "-v" },
+  { no: 49, q: "シェルの特殊変数のうち、全ての引数が格納される変数は？ダブルクォーテーションで括った時に、それぞれの引数が個々の文字列となるものとする。", a: "$@" },
+  { no: 50, q: "以下はあるシェルスクリプトからの抜粋である。空欄に適語(一文字)を入れ「文字列1(STR1)と文字列2(STR2)が等ければ真」となる条件を作成せよ。\nif test $STR1 ( ) $STR2", a: "=" },
+  { no: 51, q: "実行権の与えられていない「sample.sh」を実行せよ。ただし、シェルを起動せずに現在のシェルで実行する2文字以上のコマンドである事。", a: "source ./sample.sh" },
+  { no: 52, q: "以下はあるシェルスクリプトからの抜粋である。空欄に適語を入れ「/home/file1が存在し、かつ書き込み可能であれば真」となる条件を作成せよ。\nif test ( ) /home/file1", a: "-w" },
+  { no: 53, q: "シェルの特殊変数のうち、全ての引数が格納される変数は？ダブルクォーテーションで括った時に、全ての引数が1つの文字列としてまとめられるものとする。", a: "$*" },
+  { no: 54, q: "シェルスクリプト「file」の全てのユーザに実行権のみを追加で付与したい。適切なコマンドは？", a: ["chmod +111 file", "chmod a+x file"] },
+  { no: 55, q: "定義されている独自のシェル関数を確認するためのコマンドを答えよ。", a: "declare -f" },
+  { no: 56, q: "シェルの特殊変数のうち、1番目の引数が設定される変数は？", a: "$1" },
+  { no: 57, q: "シェルの特殊変数のうち、実行したシェルスクリプト名が設定される変数は？", a: "$0" },
+
+
+   ];
+
+let questionCount = 0;
+const maxQuestions = 30;
+let correctCount = 0; 
+let current = 0;
+
+function shuffle(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+}
+
+const customQuestions =
+  JSON.parse(localStorage.getItem("customQuestions")) || [];
+
+const convertedQuestions = customQuestions.map((item, index) => ({
+  no: qaList.length + index + 1,
+  q: item.question,
+  a: item.answer,
+  category: item.category
+}));
+
+const allQuestions = qaList.concat(convertedQuestions);
+
+let selected = [];
+
+function loadCategoryFilter() {
+  const select = document.getElementById("categoryFilter");
+
+  const categories =
+    JSON.parse(localStorage.getItem("categories")) || ["LinuC"];
+
+  categories.forEach(category => {
+    const option = document.createElement("option");
+    option.value = category;
+    option.textContent = category;
+    select.appendChild(option);
+  });
+}
+
+function startQuiz() {
+  questionCount = 0;
+  correctCount = 0;
+  current = 0;
+
+  const selectedCategory =
+    document.getElementById("categoryFilter").value;
+
+  let filteredQuestions = allQuestions;
+
+  if (selectedCategory !== "all") {
+    filteredQuestions = allQuestions.filter(
+      item => item.category === selectedCategory
+    );
+  }
+
+  shuffle(filteredQuestions);
+
+  selected = filteredQuestions.slice(0, 30);
+
+  if (selected.length === 0) {
+    document.getElementById("questionNumber").textContent = "";
+    document.getElementById("question").textContent =
+      "このカテゴリには問題がありません。";
+    document.getElementById("progress").textContent = "0 / 0";
+    return;
+  }
+
+  loadQuestion();
+}
+
+loadCategoryFilter();
+startQuiz();
+
+function updateProgress() {
+  document.getElementById("progress").textContent =
+    `${questionCount + 1} / ${maxQuestions}`;
+}
+
+function loadQuestion() {
+  const qData = selected[current];
+
+  document.getElementById("questionNumber").textContent =
+    `問題番号：${qData.no}`;
+
+  document.getElementById("question").textContent = qData.q;
+
+  document.getElementById("userInput").value = "";
+  document.getElementById("result").style.display = "none";
+
+ updateProgress();
+}
+
+function checkAnswer() {
+  const user = document.getElementById("userInput").value.trim().toLowerCase();
+  const correct = selected[current].a;
+
+  const resultBox = document.getElementById("result");
+  resultBox.style.display = "block";
+
+  let isCorrect = false;
+
+  if (Array.isArray(correct)) {
+      isCorrect = correct.map(c => c.toLowerCase()).includes(user);
+  } else {
+      isCorrect = user === correct.toLowerCase();
+  }
+
+  if (isCorrect) {
+    resultBox.style.background = "#e3f2fd";
+
+       if (Array.isArray(correct)) {
+      const others = correct
+        .map(c => c.toLowerCase())
+        .filter(c => c !== user);
+
+      if (others.length > 0) {
+        resultBox.textContent = `【〇】正解\n他の正答：${others.join(" / ")}`;
+      } else {
+        resultBox.textContent = "【〇】正解";
+      }
+    } else {
+      resultBox.textContent = "【〇】正解";
+    }
+
+    correctCount++;
+
+  } else {
+    resultBox.textContent = `【×】不正解\n正解は「${Array.isArray(correct) ? correct.join(" / ") : correct}」`;
+    resultBox.style.background = "#ffd4d4";
+  }
+}
+
+function nextQuestion() {
+  questionCount++;
+
+　if (current >= selected.length - 1) {
+
+    localStorage.setItem("correctCount", correctCount);
+    localStorage.setItem("questionCount", questionCount);
+
+let history = JSON.parse(localStorage.getItem("history") || "[]");
+
+history.push({
+  correct: correctCount,
+  total: questionCount,
+  rate: Math.round((correctCount / questionCount) * 100),
+  date: new Date().toLocaleString()
+});
+
+localStorage.setItem("history", JSON.stringify(history));
+    window.location.href = "result.html";
+    return;
+  }
+
+  current++;
+  loadQuestion();
+}
+
+function prevQuestion() {
+  if (current > 0) {
+    current--;
+    questionCount--;
+    loadQuestion();
+  }
+}
+
+</script>
+
+</body>
+</html>

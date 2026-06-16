@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>問題一覧</title>
+<style>
+body {
+  font-family: sans-serif;
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 20px;
+}
+
+.card {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 15px;
+}
+
+button {
+  margin-right: 8px;
+  padding: 6px 12px;
+}
+</style>
+</head>
+<body>
+
+<h2>登録した問題一覧</h2>
+
+<div id="questionList"></div>
+
+<p>
+  <a href="add-question.html">問題登録へ戻る</a>
+</p>
+
+<script>
+function loadQuestions() {
+  const questions =
+    JSON.parse(localStorage.getItem("customQuestions")) || [];
+
+  const list = document.getElementById("questionList");
+  list.innerHTML = "";
+
+  if (questions.length === 0) {
+    list.textContent = "登録された問題はありません。";
+    return;
+  }
+
+  questions.forEach((item, index) => {
+    const card = document.createElement("div");
+    card.className = "card";
+
+    card.innerHTML = `
+      <p><strong>問題：</strong>${item.question}</p>
+      <p><strong>答え：</strong>${item.answer}</p>
+      <p><strong>カテゴリ：</strong>${item.category}</p>
+      <button onclick="editQuestion(${index})">編集</button>
+      <button onclick="deleteQuestion(${index})">削除</button>
+    `;
+
+    list.appendChild(card);
+  });
+}
+
+function deleteQuestion(index) {
+  const questions =
+    JSON.parse(localStorage.getItem("customQuestions")) || [];
+
+  if (!confirm("この問題を削除しますか？")) {
+    return;
+  }
+
+  questions.splice(index, 1);
+
+  localStorage.setItem(
+    "customQuestions",
+    JSON.stringify(questions)
+  );
+
+  loadQuestions();
+}
+
+function editQuestion(index) {
+  localStorage.setItem("editQuestionIndex", index);
+  location.href = "add-question.html";
+}
+
+loadQuestions();
+</script>
+
+</body>
+</html>

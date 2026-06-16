@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>結果</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 400px;
+      margin: 0 auto;
+      text-align: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    h2 {
+      margin-bottom: 10px;
+    }
+    .rate {
+      font-size: 24px;
+      margin-top: 10px;
+      color: #3395ff;
+    }
+.btn {
+    display: inline-block;
+    padding: 10px 20px;
+    background: #3395ff;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    margin-top: 20px;
+  }
+  .btn:hover {
+    background: #1e7fe0;
+  }
+
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h2>結果</h2>
+    <p>正解数：<span id="correct"></span> / <span id="total"></span></p>
+    <p class="rate">正答率：<span id="rate"></span>%</p>
+
+<a href="history.html" class="btn">成績の推移を見る</a>
+
+  </div>
+
+  <script src="result.js"></script>
+</body>
+</html>

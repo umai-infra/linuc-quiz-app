@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>カテゴリ管理</title>
+<style>
+body {
+  font-family: sans-serif;
+  max-width: 600px;
+  margin: 20px auto;
+  padding: 20px;
+}
+
+.card {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 10px;
+}
+
+button {
+  margin-left: 8px;
+  padding: 6px 12px;
+}
+</style>
+</head>
+<body>
+
+<h2>カテゴリ管理</h2>
+
+<div id="categoryList"></div>
+
+<p>
+  <a href="add-question.html">問題登録へ戻る</a>
+</p>
+
+<script>
+function loadCategories() {
+  const categories =
+    JSON.parse(localStorage.getItem("categories")) || ["LinuC"];
+
+  const questions =
+    JSON.parse(localStorage.getItem("customQuestions")) || [];
+
+  const list = document.getElementById("categoryList");
+  list.innerHTML = "";
+
+  categories.forEach((category, index) => {
+    const count = questions.filter(
+      q => q.category === category
+    ).length;
+
+    const card = document.createElement("div");
+    card.className = "card";
+
+    card.innerHTML = `
+      <strong>${category}</strong>（${count}問）
+      <button onclick="renameCategory(${index})">名前変更</button>
+      <button onclick="deleteCategory(${index})">削除</button>
+    `;
+
+    list.appendChild(card);
+  });
+}
+
+function renameCategory(index) {
+  const categories =
+    JSON.parse(localStorage.getItem("categories")) || [];
+
+  const oldName = categories[index];
+
+  const newName = prompt("新しいカテゴリ名を入力してください", oldName);
+
+  if (!newName || newName.trim() === "") return;
+
+  categories[index] = newName.trim();
+
+  const questions =
+    JSON.parse(localStorage.getItem("customQuestions")) || [];
+
+  questions.forEach(q => {
+    if (q.category === oldName) {
+      q.category = newName.trim();
+    }
+  });
+
+  localStorage.setItem("categories", JSON.stringify(categories));
+  localStorage.setItem("customQuestions", JSON.stringify(questions));
+
+  loadCategories();
+}
+
+function deleteCategory(index) {
+  const categories =
+    JSON.parse(localStorage.getItem("categories")) || [];
+
+  const category = categories[index];
+
+  const questions =
+    JSON.parse(localStorage.getItem("customQuestions")) || [];
+
+  const count = questions.filter(
+    q => q.category === category
+  ).length;
+
+  if (count > 0) {
+    alert("このカテゴリには問題が登録されているため削除できません。");
+    return;
+  }
+
+  if (!confirm(`${category} を削除しますか？`)) return;
+
+  categories.splice(index, 1);
+
+  localStorage.setItem("categories", JSON.stringify(categories));
+
+  loadCategories();
+}
+
+loadCategories();
+</script>
+
+</body>
+</html>
