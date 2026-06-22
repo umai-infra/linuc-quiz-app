@@ -1,67 +1,232 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kosugi+Maru&display=swap" rel="stylesheet">
+
 <meta charset="UTF-8">
-<title>LinuC Quiz App</title>
+<title>MyDeck</title>
+
+<link rel="stylesheet"
+href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
+
 <style>
 body {
-  font-family: sans-serif;
-  max-width: 600px;
-  margin: 40px auto;
-  padding: 20px;
-  text-align: center;
-  background: #f5f5f5;
+  margin: 0;
+  min-height: 100vh;
+  background: #f7f8f5;
+  font-family: "Manrope", "Segoe UI", sans-serif;
+  color: #24352b;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .card {
-  background: white;
-  padding: 25px;
-  border-radius: 12px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  width: 90%;
+  max-width: 620px;
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 48px 42px;
+  text-align: center;
+
+  box-shadow: 0 12px 32px rgba(44, 74, 55, 0.12);
+  border: 1px solid #e3e8df;
 }
 
 h1 {
-  margin-bottom: 10px;
+  margin: 0;
+  color: #2f5d46;
+  font-size: 3.4rem;
+  font-weight: 700;
+  letter-spacing: -1px;
 }
 
-p {
-  color: #555;
+.subtitle {
+  margin-top: 10px;
+  margin-bottom: 36px;
+  color: #6f7f73;
+  font-size: 1rem;
+}
+
+.section-title {
+  margin-bottom: 12px;
+  color: #365b45;
+  font-weight: 600;
+  text-align: left;
+}
+
+select {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid #cfd8cf;
+  background: #fbfcfa;
+  color: #24352b;
+  font-size: 16px;
+  margin-bottom: 16px;
+}
+
+.start-button,
+.menu a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  text-decoration: none;
+  border-radius: 14px;
+  padding: 15px;
+
+  font-family:
+    "Yu Gothic",
+    "Hiragino Sans",
+    sans-serif;
+
+  
+  letter-spacing: 0.03em;
+
+  transition: 0.2s;
+}
+
+.start-button {
+  background: #2f5d46;
+  color: white;
+
+  font-family: "Segoe UI", sans-serif;
+
+  font-size: 22px;
+  font-weight: 700;
+
+  margin-bottom: 28px;
+}
+
+.start-button:hover,
+.menu a:hover {
+  background: #3f7358;
+  transform: translateY(-2px);
 }
 
 .menu {
-  margin-top: 25px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 18px;
 }
 
-a {
-  display: block;
-  text-decoration: none;
-  background: #3395ff;
-  color: white;
-  padding: 14px;
-  border-radius: 8px;
-  margin: 12px 0;
+.menu a {
+  background: #edf3ed;
+  color: #2f5d46;
+  border: 1px solid #dbe6da;
+
   font-size: 18px;
+  font-weight: 500;
 }
 
-a:hover {
-  background: #1e7fe0;
+.menu a:hover {
+  color: white;
+}
+
+.material-symbols-outlined {
+  font-size: 22px;
+  color: #2f5d46;
+
+  font-variation-settings:
+  'FILL' 0,
+  'wght' 300,
+  'GRAD' 0,
+  'opsz' 24;
+}
+
+.divider {
+  height: 1px;
+  background: #e3e8df;
+  margin: 26px 0;
 }
 </style>
 </head>
+
 <body>
 
 <div class="card">
-  <h1>LinuC Quiz App</h1>
-  <p>カテゴリ別に問題演習・登録・成績確認ができる学習アプリ</p>
+  <h1>MyDeck</h1>
+  <p class="subtitle">Your personal question deck.</p>
+
+  <div class="section-title">問題カテゴリを選択</div>
+
+  <select id="deckSelect"></select>
+
+  <a class="start-button" href="quiz.html" onclick="saveSelectedCategory()">
+  START
+</a>
+
+  <div class="divider"></div>
 
   <div class="menu">
-    <a href="quiz.html">問題を解く</a>
-    <a href="add-question.html">問題を登録する</a>
-    <a href="question-list.html">問題一覧・編集</a>
-    <a href="category-list.html">カテゴリ管理</a>
-    <a href="history.html">成績の推移を見る</a>
+    <a href="add-question.html">
+      <span class="material-symbols-outlined">
+      add_circle
+      </span>
+      <span>問題追加</span>
+    </a>
+
+    <a href="question-list.html">
+      <span class="material-symbols-outlined">
+      list_alt
+      </span>
+      <span>問題一覧</span>
+    </a>
+
+    <a href="category-list.html">
+      <span class="material-symbols-outlined">
+      folder
+      </span>
+      <span>カテゴリ管理</span>
+    </a>
+
+    <a href="history.html">
+      <span class="material-symbols-outlined">
+      analytics
+      </span>
+      <span>成績確認</span>
+    </a>
   </div>
 </div>
+
+<script>
+function loadDecks() {
+  const select = document.getElementById("deckSelect");
+
+  const categories =
+    JSON.parse(localStorage.getItem("categories")) || ["LinuC"];
+
+  select.innerHTML = "";
+
+  const allOption = document.createElement("option");
+  allOption.value = "all";
+  allOption.textContent = "全カテゴリ";
+  select.appendChild(allOption);
+
+  categories.forEach(category => {
+    const option = document.createElement("option");
+    option.value = category;
+    option.textContent = category;
+    select.appendChild(option);
+  });
+}
+
+function saveSelectedCategory() {
+  const selected =
+    document.getElementById("deckSelect").value;
+
+  localStorage.setItem("selectedCategory", selected);
+}
+
+loadDecks();
+</script>
 
 </body>
 </html>

@@ -118,68 +118,37 @@ function addCategory() {
 
 }
 
-function addQuestion() {
-
+async function addQuestion() {
   const question =
-    document
-      .getElementById("question")
-      .value
-      .trim();
+    document.getElementById("question").value.trim();
 
   const answer =
-    document
-      .getElementById("answer")
-      .value
-      .trim();
+    document.getElementById("answer").value.trim();
 
   const category =
-    document
-      .getElementById("categorySelect")
-      .value;
+    document.getElementById("categorySelect").value;
 
-  if (!question || !answer) {
-    alert("問題文と答えを入力してください");
+  if (!question || !answer || !category) {
+    alert("未入力の項目があります");
     return;
   }
 
-  let questions =
-    JSON.parse(
-      localStorage.getItem("customQuestions")
-    ) || [];
-
-  if (editIndex !== null) {
-
-    questions[editIndex] = {
+  await fetch("http://13.158.70.243:3000/questions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      category,
       question,
-      answer,
-      category
-    };
+      answer
+    })
+  });
 
-    localStorage.removeItem(
-      "editQuestionIndex"
-    );
+  alert("RDSに登録しました");
 
-    alert("問題を更新しました");
-
-  } else {
-
-    questions.push({
-      question,
-      answer,
-      category
-    });
-
-    alert("問題を登録しました");
-
-  }
-
-  localStorage.setItem(
-    "customQuestions",
-    JSON.stringify(questions)
-  );
-
-  location.href = "question-list.html";
-
+  document.getElementById("question").value = "";
+  document.getElementById("answer").value = "";
 }
 
 function loadEditData() {

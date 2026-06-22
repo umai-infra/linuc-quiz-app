@@ -35,9 +35,10 @@ button {
 </p>
 
 <script>
-function loadQuestions() {
-  const questions =
-    JSON.parse(localStorage.getItem("customQuestions")) || [];
+
+async function loadQuestions() {
+  const response = await fetch("http://13.158.70.243:3000/questions");
+  const questions = await response.json();
 
   const list = document.getElementById("questionList");
   list.innerHTML = "";
@@ -47,44 +48,67 @@ function loadQuestions() {
     return;
   }
 
-  questions.forEach((item, index) => {
+  questions.forEach((item) => {
     const card = document.createElement("div");
     card.className = "card";
 
-    card.innerHTML = `
-      <p><strong>問題：</strong>${item.question}</p>
-      <p><strong>答え：</strong>${item.answer}</p>
-      <p><strong>カテゴリ：</strong>${item.category}</p>
-      <button onclick="editQuestion(${index})">編集</button>
-      <button onclick="deleteQuestion(${index})">削除</button>
-    `;
+   card.innerHTML = `
+  <p><strong>問題：</strong>${item.question}</p>
+  <p><strong>答え：</strong>${item.answer}</p>
+  <p><strong>カテゴリ：</strong>${item.category}</p>
+
+  <button onclick="editQuestion(${item.id})">編集</button>
+  <button onclick="deleteQuestion(${item.id})">削除</button>
+`; 
 
     list.appendChild(card);
   });
 }
+async function editQuestion(id) {
+  const question = prompt("新しい問題文を入力してください");
+  if (!question) return;
 
-function deleteQuestion(index) {
-  const questions =
-    JSON.parse(localStorage.getItem("customQuestions")) || [];
+  const answer = prompt("新しい答えを入力してください");
+  if (!answer) return;
+
+  const category = prompt("カテゴリを入力してください");
+  if (!category) return;
+
+  await fetch(`http://13.158.70.243:3000/questions/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      category,
+      question,
+      answer
+    })
+  });
+
+  loadQuestions();
+}
+
+async function deleteQuestion(id) {
 
   if (!confirm("この問題を削除しますか？")) {
     return;
   }
 
-  questions.splice(index, 1);
-
-  localStorage.setItem(
-    "customQuestions",
-    JSON.stringify(questions)
+  await fetch(
+    `http://13.158.70.243:3000/questions/${id}`,
+    {
+      method: "DELETE"
+    }
   );
 
   loadQuestions();
 }
 
-function editQuestion(index) {
-  localStorage.setItem("editQuestionIndex", index);
-  location.href = "add-question.html";
-}
+
+
+
+
 
 loadQuestions();
 </script>

@@ -156,19 +156,29 @@ function shuffle(array) {
   }
 }
 
-const customQuestions =
-  JSON.parse(localStorage.getItem("customQuestions")) || [];
-
-const convertedQuestions = customQuestions.map((item, index) => ({
-  no: qaList.length + index + 1,
-  q: item.question,
-  a: item.answer,
-  category: item.category
-}));
-
-const allQuestions = qaList.concat(convertedQuestions);
-
+let allQuestions = [];
 let selected = [];
+
+async function loadAllQuestions() {
+  const response = await fetch("http://13.158.70.243:3000/questions");
+  const rdsQuestions = await response.json();
+
+  const baseQuestions = qaList.map(item => ({
+    no: item.no,
+    q: item.q,
+    a: item.a,
+    category: "LinuC"
+  }));
+
+  const convertedQuestions = rdsQuestions.map((item, index) => ({
+    no: baseQuestions.length + index + 1,
+    q: item.question,
+    a: item.answer,
+    category: item.category
+  }));
+
+  allQuestions = baseQuestions.concat(convertedQuestions);
+}
 
 function loadCategoryFilter() {
   const select = document.getElementById("categoryFilter");
@@ -215,8 +225,13 @@ function startQuiz() {
   loadQuestion();
 }
 
-loadCategoryFilter();
-startQuiz();
+async function initQuiz() {
+  await loadAllQuestions();
+  loadCategoryFilter();
+  startQuiz();
+}
+
+initQuiz();
 
 function updateProgress() {
   document.getElementById("progress").textContent =
