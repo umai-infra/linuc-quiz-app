@@ -197,11 +197,14 @@ select {
 </div>
 
 <script>
-function loadDecks() {
+async function loadDecks() {
   const select = document.getElementById("deckSelect");
 
-  const categories =
-    JSON.parse(localStorage.getItem("categories")) || ["LinuC"];
+ const response =
+  await fetch("http://13.158.70.243:3000/categories");
+
+const categories =
+  await response.json();
 
   select.innerHTML = "";
 
