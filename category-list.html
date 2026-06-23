@@ -5,119 +5,199 @@
 <title>カテゴリ管理</title>
 <style>
 body {
-  font-family: sans-serif;
-  max-width: 600px;
-  margin: 20px auto;
-  padding: 20px;
+  margin: 0;
+  min-height: 100vh;
+  background: #f7f8f5;
+  font-family: "Segoe UI", "Yu Gothic", sans-serif;
+  color: #24352b;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.page {
+  width: 90%;
+  max-width: 620px;
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 42px;
+  box-shadow: 0 12px 32px rgba(44, 74, 55, 0.12);
+  border: 1px solid #e3e8df;
+}
+
+h1 {
+  margin-top: 0;
+  color: #2f5d46;
+  font-size: 2.4rem;
+  letter-spacing: -1px;
 }
 
 .card {
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  padding: 15px;
-  margin-bottom: 10px;
+  background: #edf3ed;
+  color: #2f5d46;
+  border: 1px solid #dbe6da;
+  border-radius: 14px;
+  padding: 18px;
+  margin-bottom: 14px;
+  font-size: 18px;
+  font-weight: 600;
 }
 
-button {
-  margin-left: 8px;
-  padding: 6px 12px;
+.top-button {
+  display: inline-block;
+  margin-top: 20px;
+  padding: 12px 18px;
+  color: #2f5d46;
+  border: 1px solid #2f5d46;
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: 600;
 }
+
+.top-button:hover {
+  background: #eef5f1;
+}
+.category-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.category-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.edit-btn,
+.delete-btn {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.edit-btn {
+  background: #2f5d46;
+  color: white;
+}
+
+.edit-btn:hover {
+  background: #3f7358;
+}
+
+.delete-btn {
+  background: #f3e7e7;
+  color: #8b3a3a;
+}
+
+.delete-btn:hover {
+  background: #ebd6d6;
+}
+
 </style>
+
 </head>
+
 <body>
+<div class="page">
+  <h1>カテゴリ管理</h1>
 
-<h2>カテゴリ管理</h2>
+  <div id="categoryList"></div>
 
-<div id="categoryList"></div>
-
-<p>
-  <a href="add-question.html">問題登録へ戻る</a>
-</p>
+  <a href="index.html" class="top-button">TOPへ戻る</a>
+</div>
 
 <script>
-function loadCategories() {
-  const categories =
-    JSON.parse(localStorage.getItem("categories")) || ["LinuC"];
 
-  const questions =
-    JSON.parse(localStorage.getItem("customQuestions")) || [];
+async function loadCategories() {
+  const response =
+    await fetch("http://13.158.70.243:3000/categories");
+
+  const categories = await response.json();
 
   const list = document.getElementById("categoryList");
   list.innerHTML = "";
 
-  categories.forEach((category, index) => {
-    const count = questions.filter(
-      q => q.category === category
-    ).length;
+  if (categories.length === 0) {
+    list.textContent = "登録されたカテゴリはありません。";
+    return;
+  }
 
-    const card = document.createElement("div");
-    card.className = "card";
+ categories.forEach(category => {
+  const div = document.createElement("div");
+  div.className = "card";
 
-    card.innerHTML = `
-      <strong>${category}</strong>（${count}問）
-      <button onclick="renameCategory(${index})">名前変更</button>
-      <button onclick="deleteCategory(${index})">削除</button>
-    `;
+  div.innerHTML = `
+  <div class="category-row">
 
-    list.appendChild(card);
-  });
+    <strong>${category.name}</strong>
+
+    <div class="category-actions">
+
+      <button
+        class="edit-btn"
+        onclick="editCategory(${category.id}, '${category.name}')">
+        編集
+      </button>
+
+      <button
+        class="delete-btn"
+        onclick="deleteCategory(${category.id})">
+        削除
+      </button>
+
+    </div>
+
+  </div>
+`;
 }
 
-function renameCategory(index) {
-  const categories =
-    JSON.parse(localStorage.getItem("categories")) || [];
+async function editCategory(id, currentName) {
 
-  const oldName = categories[index];
+  const newName =
+    prompt("新しいカテゴリ名", currentName);
 
-  const newName = prompt("新しいカテゴリ名を入力してください", oldName);
+  if (!newName) return;
 
-  if (!newName || newName.trim() === "") return;
-
-  categories[index] = newName.trim();
-
-  const questions =
-    JSON.parse(localStorage.getItem("customQuestions")) || [];
-
-  questions.forEach(q => {
-    if (q.category === oldName) {
-      q.category = newName.trim();
+  await fetch(
+    `http://13.158.70.243:3000/categories/${id}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        name: newName
+      })
     }
-  });
-
-  localStorage.setItem("categories", JSON.stringify(categories));
-  localStorage.setItem("customQuestions", JSON.stringify(questions));
+  );
 
   loadCategories();
 }
 
-function deleteCategory(index) {
-  const categories =
-    JSON.parse(localStorage.getItem("categories")) || [];
+async function deleteCategory(id) {
 
-  const category = categories[index];
-
-  const questions =
-    JSON.parse(localStorage.getItem("customQuestions")) || [];
-
-  const count = questions.filter(
-    q => q.category === category
-  ).length;
-
-  if (count > 0) {
-    alert("このカテゴリには問題が登録されているため削除できません。");
+  if (
+    !confirm("このカテゴリを削除しますか？")
+  ) {
     return;
   }
 
-  if (!confirm(`${category} を削除しますか？`)) return;
-
-  categories.splice(index, 1);
-
-  localStorage.setItem("categories", JSON.stringify(categories));
+  await fetch(
+    `http://13.158.70.243:3000/categories/${id}`,
+    {
+      method: "DELETE"
+    }
+  );
 
   loadCategories();
 }
 
 loadCategories();
+
+
 </script>
 
 </body>

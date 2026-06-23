@@ -3,21 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LinuC  Lv1-101 コマ問</title>
+<title>MyDeck</title>
 <style>
   body {
     text-align: center;
     font-family: sans-serif;
     padding: 20px;
     max-width: 500px;
+    background: #f6faf7;
     margin: auto;
   }
-  .card {
-    padding: 20px;
-    border-radius: 10px;
-    background: #dcedc8; 
-    margin-bottom: 20px;
-  }
+ .card {
+  padding: 24px;
+  border-radius: 16px;
+  background: #ffffff;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+
 #result {
   margin-top: 30px;
    white-space: pre-line;
@@ -27,8 +30,8 @@
     padding: 15px;
     font-size: 18px;
     border: none;
-    border-radius: 8px;
-    background: #3395ff;
+    border-radius: 12px;
+    background: #2f5d46;
     color: white;
     margin-top: 10px;
   }
@@ -52,13 +55,59 @@ h2 {
   text-align: left;
   white-space: pre-line; 
 }
+
+#currentCategory {
+  font-size: 32px;
+  font-weight: 700;
+  color: #2f5d46;
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+#progress {
+  margin: 16px 0 24px;
+  color: #5a6f63;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.headerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+#btnTop {
+  width: auto;
+  padding: 10px 16px;
+  margin: 0;
+  background: transparent;
+  color: #2f5d46;
+  border: 1px solid #2f5d46;
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+#btnTop:hover {
+  background: #eef5f1;
+}
+
 </style>
 </head>
 <body>
 
-<h2>LinuC  Lv1-101 コマ問</h2>
+<div class="headerRow">
+  <div id="currentCategory"></div>
 
-<div id="progress" style="margin-bottom: 10px; font-size: 18px; color: #333;"></div>
+  <button id="btnTop">
+    🏠 TOPへ戻る
+  </button>
+</div>
+
+
+<div id="progress"></div>
 
 <div class="card">
   <div id="questionNumber"></div>
@@ -137,11 +186,23 @@ function startQuiz() {
 }
 
 async function initQuiz() {
+  const selectedCategory =
+    localStorage.getItem("selectedCategory") || "all";
+  document.getElementById("currentCategory").textContent =
+    selectedCategory === "all"
+      ? "全カテゴリ"
+      : selectedCategory;
+
   await loadAllQuestions();
   startQuiz();
 }
 
 initQuiz();
+
+document.getElementById("btnTop")
+  .addEventListener("click", () => {
+    window.location.href = "index.html";
+  });
 
 function updateProgress() {
   document.getElementById("progress").textContent =
@@ -152,7 +213,7 @@ function loadQuestion() {
   const qData = selected[current];
 
   document.getElementById("questionNumber").textContent =
-    `問題番号：${qData.no}`;
+  `問題 ${qData.no}`;
 
   document.getElementById("question").textContent = qData.q;
 

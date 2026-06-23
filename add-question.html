@@ -6,73 +6,166 @@
 <title>問題登録</title>
 
 <style>
-
 body {
-  font-family: sans-serif;
-  max-width: 600px;
-  margin: 20px auto;
-  padding: 20px;
+  margin: 0;
+  min-height: 100vh;
+  background: #f7f8f5;
+  font-family: "Segoe UI", "Yu Gothic", sans-serif;
+  color: #24352b;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-input,
+.page {
+  width: 90%;
+  max-width: 620px;
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 42px;
+  box-shadow: 0 12px 32px rgba(44, 74, 55, 0.12);
+  border: 1px solid #e3e8df;
+}
+
+h1 {
+  margin-top: 0;
+  color: #2f5d46;
+  font-size: 2.4rem;
+  letter-spacing: -1px;
+}
+
 textarea,
+input,
 select {
   width: 100%;
-  padding: 10px;
-  margin-bottom: 10px;
+  padding: 14px;
+  margin-bottom: 14px;
   box-sizing: border-box;
+  border: 1px solid #cfd8cf;
+  border-radius: 12px;
+  background: #fbfcfa;
+  color: #24352b;
+  font-size: 16px;
+}
+
+textarea {
+  min-height: 120px;
+  resize: vertical;
 }
 
 button {
-  padding: 10px 20px;
-  margin-right: 5px;
+  width: 100%;
+  padding: 15px;
+  border: none;
+  border-radius: 14px;
+  background: #2f5d46;
+  color: white;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+button:hover {
+  background: #3f7358;
+}
+
+.top-button {
+  display: inline-block;
+  margin-top: 18px;
+  padding: 12px 18px;
+  color: #2f5d46;
+  border: 1px solid #2f5d46;
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.top-button:hover {
+  background: #eef5f1;
+}
+
+.button-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.button-row button {
+  flex: 4;
+}
+
+.manage-button {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #2f5d46;
+  border-radius: 14px;
+  color: #2f5d46;
+  text-decoration: none;
+  font-weight: 600;
+  background: white;
+}
+
+.manage-button:hover {
+  background: #eef5f1;
 }
 
 </style>
 
 </head>
+
 <body>
 
-<h2>カテゴリ登録</h2>
+<div class="page">
+  <h1>問題追加</h1>
 
-<input id="newCategory" placeholder="カテゴリ名">
+  <input
+    id="newCategory"
+    placeholder="新しいカテゴリ名"
+  >
 
-<button onclick="addCategory()">
-カテゴリ追加
-</button>
+  <div class="button-row">
+    <button onclick="addCategory()">
+      カテゴリ追加
+    </button>
 
-<hr>
+    <a href="category-list.html" class="manage-button">
+      管理
+    </a>
+  </div>
 
-<h2>問題登録</h2>
+  <textarea
+    id="question"
+    placeholder="問題文"
+  ></textarea>
 
-<textarea
-  id="question"
-  placeholder="問題文"
-></textarea>
+  <input
+    id="answer"
+    placeholder="答え"
+  >
 
-<input
-id="answer"
-placeholder="答え"
+  <select id="categorySelect"></select>
 
->
+  <button onclick="addQuestion()">
+    保存
+  </button>
 
-<select id="categorySelect"></select>
-
-<button onclick="addQuestion()">
-保存
-</button>
+  <a href="index.html" class="top-button">
+    TOPへ戻る
+  </a>
+</div>
 
 <script>
 
-let categories =
-  JSON.parse(
-    localStorage.getItem("categories")
-  ) || ["LinuC"];
+async function loadCategories() {
 
-const editIndex =
-  localStorage.getItem("editQuestionIndex");
+  const response =
+    await fetch("http://13.158.70.243:3000/categories");
 
-function loadCategories() {
+  const categories =
+    await response.json();
 
   const select =
     document.getElementById("categorySelect");
@@ -84,39 +177,17 @@ function loadCategories() {
     const option =
       document.createElement("option");
 
-    option.value = category;
-    option.textContent = category;
+    option.value = category.name;
+    option.textContent = category.name;
 
     select.appendChild(option);
 
   });
-
 }
 
-function addCategory() {
+const editIndex =
+  localStorage.getItem("editQuestionIndex");
 
-  const category =
-    document
-      .getElementById("newCategory")
-      .value
-      .trim();
-
-  if (!category) return;
-
-  categories.push(category);
-
-  localStorage.setItem(
-    "categories",
-    JSON.stringify(categories)
-  );
-
-  loadCategories();
-
-  document.getElementById(
-    "newCategory"
-  ).value = "";
-
-}
 
 async function addQuestion() {
   const question =
@@ -176,8 +247,37 @@ function loadEditData() {
 
 }
 
+async function addCategory() {
+
+  const name =
+    document.getElementById("newCategory")
+      .value
+      .trim();
+
+  if (!name) {
+    alert("カテゴリ名を入力してください");
+    return;
+  }
+
+  await fetch(
+    "http://13.158.70.243:3000/categories",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ name })
+    }
+  );
+
+  document.getElementById("newCategory").value = "";
+
+  await loadCategories();
+
+  alert("カテゴリを追加しました");
+}
+
 loadCategories();
-loadEditData();
 
 </script>
 
