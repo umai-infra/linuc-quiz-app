@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>アカウント管理</title>
+
+<style>
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: #f7f8f5;
+  font-family: "Segoe UI", "Yu Gothic", sans-serif;
+  color: #24352b;
+
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 40px 0;
+}
+
+.page {
+  width: 90%;
+  max-width: 620px;
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 42px;
+  box-shadow: 0 12px 32px rgba(44, 74, 55, 0.12);
+  border: 1px solid #e3e8df;
+}
+
+.top-bar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 16px;
+}
+
+.top-button {
+  padding: 8px 14px;
+  color: #2f5d46;
+  border: 1px solid #2f5d46;
+  border-radius: 10px;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.top-button:hover {
+  background: #eef5f1;
+}
+
+h1 {
+  margin-top: 0;
+  margin-bottom: 24px;
+  color: #2f5d46;
+  font-size: 2rem;
+  letter-spacing: -1px;
+}
+
+.account-card {
+  background: #edf3ed;
+  border: 1px solid #dbe6da;
+  border-radius: 14px;
+  padding: 18px 20px;
+  margin-bottom: 18px;
+}
+
+.label {
+  color: #6f7d73;
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+
+.value {
+  color: #2f5d46;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.logout-button {
+  width: 100%;
+  padding: 15px;
+  border: none;
+  border-radius: 14px;
+  background: #2f5d46;
+  color: white;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.logout-button:hover {
+  background: #3f7358;
+}
+
+.delete-button {
+  width: 100%;
+  padding: 15px;
+  margin-top: 14px;
+
+  border: none;
+  border-radius: 14px;
+
+  background: #b44343;
+  color: white;
+
+  font-size: 17px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.delete-button:hover {
+  background: #983737;
+}
+
+</style>
+</head>
+
+<body>
+<div class="page">
+
+  <div class="top-bar">
+    <a href="index.html" class="top-button">TOPへ戻る</a>
+  </div>
+
+  <h1>アカウント管理</h1>
+
+  <div class="account-card">
+    <div class="label">ユーザー名</div>
+    <div class="value" id="username"></div>
+  </div>
+
+  <button class="logout-button" onclick="logout()">
+    ログアウト
+  </button>
+
+  <button class="delete-button" onclick="deleteAccount()">
+  アカウントを削除
+</button>
+</div>
+
+<script>
+const username = localStorage.getItem("username");
+
+if (!username) {
+  location.href = "login.html";
+}
+
+document.getElementById("username").textContent = username;
+
+function logout() {
+  localStorage.removeItem("userId");
+  localStorage.removeItem("username");
+  location.href = "login.html";
+}
+
+async function deleteAccount() {
+
+  if (!confirm("アカウントを削除しますか？\nこの操作は元に戻せません。")) {
+    return;
+  }
+
+  const userId = localStorage.getItem("userId");
+
+  const response = await fetch(
+    `http://13.158.70.243:3000/users/${userId}`,
+    {
+      method: "DELETE"
+    }
+  );
+
+  if (!response.ok) {
+    alert("削除に失敗しました");
+    return;
+  }
+
+  localStorage.clear();
+
+  alert("アカウントを削除しました");
+
+  location.href = "register.html";
+}
+
+</script>
+
+
+</body>
+</html>

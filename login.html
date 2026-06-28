@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>MyDeck - Login</title>
+
+<style>
+
+body{
+  margin:0;
+  min-height:100vh;
+
+  display:flex;
+  justify-content:center;
+  align-items:center;
+
+  background:#f7f8f5;
+
+  font-family:"Segoe UI","Yu Gothic",sans-serif;
+}
+
+.card{
+
+  width:90%;
+  max-width:520px;
+
+  background:white;
+
+  padding:48px 42px;
+
+  border-radius:24px;
+
+  box-shadow:0 12px 32px rgba(44,74,55,.12);
+
+  border:1px solid #e3e8df;
+
+  text-align:center;
+}
+
+h1{
+
+  margin:0;
+
+  color:#2f5d46;
+
+  font-size:54px;
+
+  letter-spacing:-1px;
+}
+
+.subtitle{
+
+  color:#6f7d73;
+
+  margin:12px 0 36px;
+
+  line-height:1.5;
+}
+
+input{
+
+  width:100%;
+
+  box-sizing:border-box;
+
+  padding:14px;
+
+  margin-bottom:16px;
+
+  border-radius:12px;
+
+  border:1px solid #cfd8cf;
+
+  background:#fbfcfa;
+
+  font-size:16px;
+}
+
+button{
+
+  width:100%;
+
+  padding:15px;
+
+  border:none;
+
+  border-radius:14px;
+
+  background:#2f5d46;
+
+  color:white;
+
+  font-size:20px;
+
+  font-weight:700;
+
+  cursor:pointer;
+
+  transition:.2s;
+}
+
+button:hover{
+
+  background:#3f7358;
+}
+
+.register{
+
+  margin-top:22px;
+}
+
+.register a{
+
+  color:#2f5d46;
+
+  text-decoration:none;
+
+  font-weight:500;
+}
+
+.register a:hover{
+
+  text-decoration:underline;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+<h1>MyDeck</h1>
+
+<p class="subtitle">
+Your personal question deck.
+</p>
+
+<input
+id="username"
+placeholder="ユーザー名">
+
+<input
+id="password"
+type="password"
+placeholder="パスワード">
+
+<button onclick="login()">
+ログイン
+</button>
+
+<p class="register">
+<a href="register.html">
+新規登録
+</a>
+</p>
+
+</div>
+
+<script>
+
+async function login() {
+  const username =
+    document.getElementById("username").value.trim();
+
+  const password =
+    document.getElementById("password").value.trim();
+
+  if (!username || !password) {
+    alert("入力してください");
+    return;
+  }
+
+  const response = await fetch(
+    "http://13.158.70.243:3000/login",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        username,
+        password
+      })
+    }
+  );
+
+  if (!response.ok) {
+    alert("ログインに失敗しました");
+    return;
+  }
+
+  const user = await response.json();
+
+  localStorage.setItem("userId", user.id);
+  localStorage.setItem("username", user.username);
+
+  location.href = "index.html";
+}
+</script>
+
+</body>
+</html>

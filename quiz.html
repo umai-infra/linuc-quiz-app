@@ -127,7 +127,6 @@ h2 {
 <script>
 
 let questionCount = 0;
-const maxQuestions = 30;
 let correctCount = 0; 
 let current = 0;
 
@@ -142,7 +141,13 @@ let allQuestions = [];
 let selected = [];
 
 async function loadAllQuestions() {
-  const response = await fetch("http://13.158.70.243:3000/questions");
+
+const userId = localStorage.getItem("userId");
+
+const response =
+  await fetch(
+    `http://13.158.70.243:3000/questions?userId=${userId}`
+  );
   const rdsQuestions = await response.json();
 
  allQuestions = rdsQuestions.map((item, index) => ({
@@ -153,26 +158,32 @@ async function loadAllQuestions() {
 }));
 }
 
-
 function startQuiz() {
   questionCount = 0;
   correctCount = 0;
   current = 0;
 
   const selectedCategory =
-  localStorage.getItem("selectedCategory") || "all";
+    localStorage.getItem("selectedCategory") || "all";
 
-  let filteredQuestions = allQuestions;
-
-  if (selectedCategory !== "all") {
-    filteredQuestions = allQuestions.filter(
-      item => item.category === selectedCategory
-    );
-  }
+  const filteredQuestions =
+    selectedCategory === "all"
+      ? allQuestions
+      : allQuestions.filter(item => item.category === selectedCategory);
 
   shuffle(filteredQuestions);
 
-  selected = filteredQuestions.slice(0, 30);
+  const selectedCount =
+  localStorage.getItem("questionCount") || "30";
+
+if (selectedCount === "all") {
+  selected = filteredQuestions;
+} else {
+  selected = filteredQuestions.slice(
+    0,
+    Number(selectedCount)
+  );
+}
 
   if (selected.length === 0) {
     document.getElementById("questionNumber").textContent = "";
@@ -206,7 +217,7 @@ document.getElementById("btnTop")
 
 function updateProgress() {
   document.getElementById("progress").textContent =
-    `${questionCount + 1} / ${maxQuestions}`;
+    `${current + 1} / ${selected.length}`;
 }
 
 function loadQuestion() {
@@ -263,7 +274,7 @@ function checkAnswer() {
   }
 }
 
-function nextQuestion() {
+async function nextQuestion() {
   questionCount++;
 
 　if (current >= selected.length - 1) {
@@ -271,16 +282,19 @@ function nextQuestion() {
     localStorage.setItem("correctCount", correctCount);
     localStorage.setItem("questionCount", questionCount);
 
-let history = JSON.parse(localStorage.getItem("history") || "[]");
-
-history.push({
-  correct: correctCount,
-  total: questionCount,
-  rate: Math.round((correctCount / questionCount) * 100),
-  date: new Date().toLocaleString()
+await fetch("http://13.158.70.243:3000/results", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    userId: localStorage.getItem("userId"),
+    category: localStorage.getItem("selectedCategory") || "all",
+    correct: correctCount,
+    total: selected.length,
+rate: Math.round((correctCount / selected.length) * 100)
+  })
 });
-
-localStorage.setItem("history", JSON.stringify(history));
     window.location.href = "result.html";
     return;
   }

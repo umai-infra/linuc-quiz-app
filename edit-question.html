@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>問題編集</title>
+
+<style>
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: #f7f8f5;
+  font-family: "Segoe UI", "Yu Gothic", sans-serif;
+  color: #24352b;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.page {
+  width: 90%;
+  max-width: 620px;
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 42px;
+  box-shadow: 0 12px 32px rgba(44, 74, 55, 0.12);
+  border: 1px solid #e3e8df;
+}
+
+h1 {
+  margin-top: 0;
+  color: #2f5d46;
+  font-size: 2.4rem;
+  letter-spacing: -1px;
+}
+
+textarea,
+input,
+select {
+  width: 100%;
+  padding: 14px;
+  margin-bottom: 14px;
+  box-sizing: border-box;
+  border: 1px solid #cfd8cf;
+  border-radius: 12px;
+  background: #fbfcfa;
+  color: #24352b;
+  font-size: 16px;
+}
+
+textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+button {
+  width: 100%;
+  padding: 15px;
+  border: none;
+  border-radius: 14px;
+  background: #2f5d46;
+  color: white;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+button:hover {
+  background: #3f7358;
+}
+
+.top-button {
+  display: inline-block;
+  margin-top: 18px;
+  padding: 12px 18px;
+  color: #2f5d46;
+  border: 1px solid #2f5d46;
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.top-button:hover {
+  background: #eef5f1;
+}
+</style>
+</head>
+
+<body>
+<div class="page">
+  <h1>問題編集</h1>
+
+  <textarea
+    id="question"
+    placeholder="問題文"
+  ></textarea>
+
+  <input
+    id="answer"
+    placeholder="答え"
+  >
+
+  <select id="categorySelect"></select>
+
+  <button onclick="updateQuestion()">
+    更新
+  </button>
+
+  <a href="question-list.html" class="top-button">
+    問題一覧へ戻る
+  </a>
+</div>
+
+<script>
+const params =
+  new URLSearchParams(window.location.search);
+
+const id = params.get("id");
+
+async function loadCategories() {
+  const userId = localStorage.getItem("userId");
+
+  const response =
+    await fetch(
+      `http://13.158.70.243:3000/categories?userId=${userId}`
+    );
+
+  const categories = await response.json();
+
+  const select =
+    document.getElementById("categorySelect");
+
+  select.innerHTML = "";
+
+  categories.forEach(category => {
+    const option =
+      document.createElement("option");
+
+    option.value = category.name;
+    option.textContent = category.name;
+
+    select.appendChild(option);
+  });
+}
+
+async function loadQuestion() {
+  const userId = localStorage.getItem("userId");
+
+  const response =
+    await fetch(
+      `http://13.158.70.243:3000/questions?userId=${userId}`
+    );
+
+  const questions = await response.json();
+
+  const target =
+    questions.find(item => String(item.id) === String(id));
+
+  if (!target) {
+    alert("問題が見つかりません");
+    location.href = "question-list.html";
+    return;
+  }
+
+  document.getElementById("question").value =
+    target.question;
+
+  document.getElementById("answer").value =
+    target.answer;
+
+  document.getElementById("categorySelect").value =
+    target.category;
+}
+
+async function updateQuestion() {
+  const question =
+    document.getElementById("question").value.trim();
+
+  const answer =
+    document.getElementById("answer").value.trim();
+
+  const category =
+    document.getElementById("categorySelect").value;
+
+  if (!question || !answer || !category) {
+    alert("未入力の項目があります");
+    return;
+  }
+
+  await fetch(
+    `http://13.158.70.243:3000/questions/${id}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+  category,
+  question,
+  answer,
+  userId: localStorage.getItem("userId")
+})
+    }
+  );
+
+  alert("更新しました");
+  location.href = "question-list.html";
+}
+
+async function initPage() {
+  await loadCategories();
+  await loadQuestion();
+}
+
+initPage();
+</script>
+
+</body>
+</html>

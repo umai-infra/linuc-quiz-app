@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>MyDeck - Register</title>
+
+<style>
+
+body{
+  margin:0;
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:#f7f8f5;
+  font-family:"Segoe UI","Yu Gothic",sans-serif;
+}
+
+.card{
+  width:90%;
+  max-width:520px;
+  background:white;
+  padding:48px 42px;
+  border-radius:24px;
+  box-shadow:0 12px 32px rgba(44,74,55,.12);
+  border:1px solid #e3e8df;
+  text-align:center;
+}
+
+h1{
+  margin:0;
+  color:#2f5d46;
+  font-size:54px;
+  letter-spacing:-1px;
+}
+
+.subtitle{
+  color:#6f7d73;
+  margin:12px 0 36px;
+  line-height:1.5;
+}
+
+input{
+  width:100%;
+  box-sizing:border-box;
+  padding:14px;
+  margin-bottom:16px;
+  border-radius:12px;
+  border:1px solid #cfd8cf;
+  background:#fbfcfa;
+  font-size:16px;
+}
+
+button{
+  width:100%;
+  padding:15px;
+  border:none;
+  border-radius:14px;
+  background:#2f5d46;
+  color:white;
+  font-size:20px;
+  font-weight:700;
+  cursor:pointer;
+  transition:.2s;
+}
+
+button:hover{
+  background:#3f7358;
+}
+
+.register {
+  margin-top: 24px;
+}
+
+.register a {
+  color: #2f5d46;
+  text-decoration: none;
+  font-size: 16px; 
+  font-weight: 600; 
+}
+
+.register a:hover {
+  text-decoration: underline;
+}
+
+.description {
+  margin: -22px 0 28px;
+  color: #6f7d73;
+  font-size: 14px;
+}
+
+.input-label{
+  display:block;
+  margin:18px 0 8px;
+  color:#2f5d46;
+  font-size:15px;
+  font-weight:600;
+  text-align:left;
+}
+
+.description{
+  margin:-20px 0 28px;
+  color:#6f7d73;
+  font-size:14px;
+  line-height:1.5;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+<h1>MyDeck</h1>
+
+<p class="subtitle">
+Create your account.
+</p>
+
+<label class="input-label">
+新しいユーザー名
+</label>
+
+<input
+id="username"
+placeholder="例：tomomi">
+
+<label class="input-label">
+パスワードを設定
+</label>
+
+<input
+id="password"
+type="password"
+placeholder="8文字以上">
+
+<label class="input-label">
+パスワード（確認）
+</label>
+
+<input
+id="confirmPassword"
+type="password"
+placeholder="もう一度入力してください">
+
+<button onclick="register()">
+新規登録
+</button>
+
+<p class="register">
+<a href="login.html">
+ログインはこちら
+</a>
+</p>
+
+</div>
+
+<script>
+
+async function register() {
+
+  const username =
+    document.getElementById("username").value.trim();
+
+  const password =
+    document.getElementById("password").value.trim();
+
+  const confirmPassword =
+  document.getElementById("confirmPassword").value.trim();
+
+ if (!username || !password || !confirmPassword) {
+  alert("入力してください");
+  return;
+}
+
+if (password !== confirmPassword) {
+  alert("パスワードが一致しません");
+  return;
+}
+
+  const response = await fetch(
+  "http://13.158.70.243:3000/register",
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      username,
+      password
+    })
+  }
+);
+
+if (!response.ok) {
+  alert("そのユーザー名は既に使われています");
+  return;
+}
+
+alert("登録しました");
+location.href = "login.html";
+
+}
+
+</script>
+
+</body>
+</html>
